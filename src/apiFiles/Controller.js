@@ -114,6 +114,65 @@ const getOrder = async (req, res) => {
         res.status(500).json({ message: 'Error obteniendo la orden', error });
     }
 };
+
+//post order
+
+const registerOrder = async (req, res) => {
+    try {
+        const { id, restaurant_id, menu_id } = req.body;
+        const result = await pool.query('INSERT INTO orders (id, restaurant_id, menu_id) VALUES ($1, $2, $3) RETURNING *', [id, restaurant_id, menu_id]);
+        res.status(201).json(result.rows[0]);
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ message: 'Error registrando la orden', error });
+    }
+};
+
 // Other CRUD operations for users, restaurants, menus, reservations, and orders can be added similarly.
 
-module.exports = { registerUser , loginUser, getUser, updateUser, deleteUser, registerMenu, getMenu, updateMenu, deleteMenu, getOrder };
+const registerRestaurant  = async (req, res) => {
+    try{
+        const { restaurantID, name, address } = req.body;
+        const result = await pool.query('INSERT INTO Restaurante (restaurant_id, name, address) VALUES ($1, $2, $3) RETURNING *', [restaurantID, name, address]);
+        res.status(201).json(result.rows[0]);
+    }catch (error) {
+        res.status(500).json({ message: 'Error registrando restaurante', error });
+    }
+};
+
+const getRestaurant = async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT id, name, address, phone, owner_id, created_at FROM restaurants WHERE id = $1',
+            [req.params.id]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ message: 'Error obteniendo la restaurante', error });
+    }
+};
+
+//Reservations
+const registerReservation  = async (req, res) => {
+    try{
+        const { id, restaurant_id, menu_id, reservation_time } = req.body;
+        const result = await pool.query('INSERT INTO reservations (id, restaurant_id, menu_id, reservation_time) VALUES ($1, $2, $3, $4) RETURNING *', [id, restaurant_id, menu_id, reservation_time]);
+        res.status(201).json(result.rows[0]);
+    }catch (error) {
+        res.status(500).json({ message: 'Error registrando reservacion', error });
+    }
+};
+
+const deleteReservation = async (req, res) => {
+    try {
+        await pool.query(
+            'DELETE FROM reservations WHERE id = $1',
+            [req.params.id]
+        );
+        res.json({ message: 'Reservacion eliminada correctamente.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error eliminando reservacion', error });
+    }
+};
+
+module.exports = { registerUser , loginUser, getUser, updateUser, deleteUser, registerMenu, getMenu, updateMenu, deleteMenu, getOrder, registerRestaurant, getRestaurant, registerOrder, registerReservation, deleteReservation };
